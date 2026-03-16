@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TaskMatrix — Smart Priority Engine</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="src/style.css">
+</head>
+<body>
+
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+
+  <div class="container">
+
+    <!-- HEADER -->
+    <header class="anim-fade-up">
+      <div class="header-badge">
+        <span class="live-dot"></span>
+        MCDM Engine v1.0 · Live
+      </div>
+      <h1>Task<span>Matrix</span></h1>
+      <p class="tagline">Multi-Criteria Decision-Making · Weighted Priority Engine · Fuzzy Logic Scoring</p>
+    </header>
+
+    <!-- FORMULA STRIP -->
+    <div class="formula-strip anim-fade-up" style="animation-delay:0.08s">
+      <strong>SCORE =</strong>
+      <span class="formula-tag">w₁ × Urgency</span>
+      <span class="formula-op">+</span>
+      <span class="formula-tag">w₂ × Impact</span>
+      <span class="formula-op">+</span>
+      <span class="formula-tag">w₃ × Ease</span>
+      <span class="formula-op">+</span>
+      <span class="formula-tag">w₄ × Deadline</span>
+      <span class="formula-hint">← tune weights below</span>
+    </div>
+
+    <!-- WEIGHT CONTROLS -->
+    <div class="weights-panel anim-fade-up" style="animation-delay:0.14s">
+      <div class="weights-header">
+        <h2>Scoring Weights <span class="config-tag">MCDM CONFIG</span></h2>
+        <p class="weights-desc">These 4 sliders control how much each factor contributes to a task's Priority Score (0–100).</p>
+      </div>
+      <div class="weights-grid">
+        <div class="weight-item w-urgency">
+          <div class="weight-top">
+            <span class="weight-icon">⚡</span>
+            <div>
+              <div class="weight-label">Urgency</div>
+              <div class="weight-sublabel">How time-sensitive?</div>
+            </div>
+            <div class="weight-val" id="wUrgencyVal">0.35</div>
+          </div>
+          <input type="range" id="wUrgency" min="0" max="1" step="0.05" value="0.35">
+        </div>
+        <div class="weight-item w-impact">
+          <div class="weight-top">
+            <span class="weight-icon">🎯</span>
+            <div>
+              <div class="weight-label">Impact</div>
+              <div class="weight-sublabel">How important?</div>
+            </div>
+            <div class="weight-val" id="wImpactVal">0.30</div>
+          </div>
+          <input type="range" id="wImpact" min="0" max="1" step="0.05" value="0.30">
+        </div>
+        <div class="weight-item w-ease">
+          <div class="weight-top">
+            <span class="weight-icon">🧩</span>
+            <div>
+              <div class="weight-label">Ease (1/Effort)</div>
+              <div class="weight-sublabel">Easier = higher score</div>
+            </div>
+            <div class="weight-val" id="wEffortVal">0.20</div>
+          </div>
+          <input type="range" id="wEffort" min="0" max="1" step="0.05" value="0.20">
+        </div>
+        <div class="weight-item w-deadline">
+          <div class="weight-top">
+            <span class="weight-icon">📅</span>
+            <div>
+              <div class="weight-label">Deadline</div>
+              <div class="weight-sublabel">How close is due date?</div>
+            </div>
+            <div class="weight-val" id="wDeadlineVal">0.15</div>
+          </div>
+          <input type="range" id="wDeadline" min="0" max="1" step="0.05" value="0.15">
+        </div>
+      </div>
+      <div class="weight-sum-row">
+        <span>Total Weight:</span>
+        <span id="weightTotal" class="weight-total-val">1.00</span>
+        <span id="weightWarn" class="weight-warn hidden">⚠ Auto-normalized</span>
+      </div>
+    </div>
+
+    <!-- ADD TASK FORM -->
+    <div class="form-card anim-fade-up" style="animation-delay:0.2s">
+      <div class="form-card-header">
+        <h2>Add New Task</h2>
+        <div class="form-card-badge">+</div>
+      </div>
+      <div class="form-grid">
+
+        <div class="field span2">
+          <label for="taskName">Task Name</label>
+          <input type="text" id="taskName" placeholder="e.g. Submit project report, Prepare for exam…" />
+        </div>
+
+        <div class="field">
+          <label for="taskCategory">Category</label>
+          <select id="taskCategory">
+            <option value="Work">💼 Work</option>
+            <option value="Study">📚 Study</option>
+            <option value="Personal">🏠 Personal</option>
+            <option value="Health">💪 Health</option>
+            <option value="Finance">💰 Finance</option>
+            <option value="Other">📌 Other</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="taskDeadline">Deadline</label>
+          <input type="date" id="taskDeadline" />
+        </div>
+
+        <div class="slider-field">
+          <div class="slider-header">
+            <label>Urgency</label>
+            <span class="slider-val s-urgency" id="urgencyVal">5</span>
+          </div>
+          <input type="range" id="taskUrgency" min="1" max="10" value="5">
+          <div class="slider-labels"><span>Low</span><span>High</span></div>
+        </div>
+
+        <div class="slider-field">
+          <div class="slider-header">
+            <label>Impact</label>
+            <span class="slider-val s-impact" id="impactVal">5</span>
+          </div>
+          <input type="range" id="taskImpact" min="1" max="10" value="5">
+          <div class="slider-labels"><span>Low</span><span>High</span></div>
+        </div>
+
+        <div class="slider-field">
+          <div class="slider-header">
+            <label>Difficulty</label>
+            <span class="slider-val s-diff" id="diffVal">5</span>
+          </div>
+          <input type="range" id="taskDifficulty" min="1" max="10" value="5">
+          <div class="slider-labels"><span>Easy</span><span>Hard</span></div>
+        </div>
+
+        <div class="slider-field">
+          <div class="slider-header">
+            <label>Effort (hrs)</label>
+            <span class="slider-val s-effort" id="effortVal">3</span>
+          </div>
+          <input type="range" id="taskEffort" min="1" max="20" value="3">
+          <div class="slider-labels"><span>1h</span><span>20h</span></div>
+        </div>
+
+        <div class="btn-add-wrap">
+          <button class="btn-add" id="addTaskBtn">
+            <span>+</span> Add Task
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- STATS ROW -->
+    <div class="stats-row anim-fade-up" style="animation-delay:0.26s">
+      <div class="stat-card">
+        <div class="stat-icon">📋</div>
+        <div class="stat-num" id="statTotal">0</div>
+        <div class="stat-label">Total Tasks</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🔥</div>
+        <div class="stat-num" id="statCritical">0</div>
+        <div class="stat-label">Critical</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">✅</div>
+        <div class="stat-num" id="statDone">0</div>
+        <div class="stat-label">Completed</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">📊</div>
+        <div class="stat-num" id="statAvgScore">—</div>
+        <div class="stat-label">Avg Score</div>
+      </div>
+    </div>
+
+    <!-- FILTER BAR -->
+    <div class="filter-bar anim-fade-up" style="animation-delay:0.3s">
+      <div class="filter-left">
+        <select id="filterCategory" class="filter-select">
+          <option value="All">All Categories</option>
+          <option value="Work">💼 Work</option>
+          <option value="Study">📚 Study</option>
+          <option value="Personal">🏠 Personal</option>
+          <option value="Health">💪 Health</option>
+          <option value="Finance">💰 Finance</option>
+          <option value="Other">📌 Other</option>
+        </select>
+        <select id="filterPriority" class="filter-select">
+          <option value="All">All Priorities</option>
+          <option value="critical">🔴 Critical</option>
+          <option value="high">🟠 High</option>
+          <option value="medium">🟡 Medium</option>
+          <option value="low">🟢 Low</option>
+        </select>
+        <label class="toggle-wrap">
+          <input type="checkbox" id="hideDone"> Hide Completed
+        </label>
+      </div>
+      <div class="sort-badge">↓ AUTO-SORTED BY SCORE</div>
+    </div>
+
+    <!-- TASK LIST -->
+    <div class="list-header anim-fade-up" style="animation-delay:0.32s">
+      <h2>Priority Queue</h2>
+    </div>
+    <div class="task-list" id="taskList">
+      <div class="empty-state" id="emptyState">
+        <div class="empty-icon">📋</div>
+        <p>No tasks yet.<br>Add your first task above to get started!</p>
+      </div>
+    </div>
+
+    <!-- EISENHOWER MATRIX -->
+    <div class="matrix-section anim-fade-up" style="animation-delay:0.36s">
+      <div class="matrix-title-row">
+        <h2>Eisenhower Matrix View</h2>
+        <span class="matrix-hint">Tasks auto-placed by urgency &amp; impact levels</span>
+      </div>
+      <div class="matrix-wrap">
+        <div class="matrix-grid">
+          <div class="quadrant q1">
+            <div class="q-header">
+              <div class="q-title">🔥 Do First</div>
+              <div class="q-subtitle">Urgent + Important</div>
+            </div>
+            <div class="q-tasks" id="q1Tasks"></div>
+          </div>
+          <div class="quadrant q2">
+            <div class="q-header">
+              <div class="q-title">📅 Schedule</div>
+              <div class="q-subtitle">Not Urgent + Important</div>
+            </div>
+            <div class="q-tasks" id="q2Tasks"></div>
+          </div>
+          <div class="quadrant q3">
+            <div class="q-header">
+              <div class="q-title">👥 Delegate</div>
+              <div class="q-subtitle">Urgent + Less Important</div>
+            </div>
+            <div class="q-tasks" id="q3Tasks"></div>
+          </div>
+          <div class="quadrant q4">
+            <div class="q-header">
+              <div class="q-title">🗑 Eliminate</div>
+              <div class="q-subtitle">Not Urgent + Less Important</div>
+            </div>
+            <div class="q-tasks" id="q4Tasks"></div>
+          </div>
+        </div>
+        <div class="axis-labels">
+          <span class="axis-label">← Low Urgency</span>
+          <span class="axis-label">High Urgency →</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- BOTTOM -->
+    <div class="bottom-bar anim-fade-up" style="animation-delay:0.4s">
+      <button class="btn-clear" id="clearAllBtn">🗑 Clear All Tasks</button>
+      <button class="btn-export" id="exportBtn">📤 Export JSON</button>
+    </div>
+
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="src/app.js"></script>
+</body>
+</html>
